@@ -6,9 +6,10 @@ const userSchema = new mongoose.Schema({
   lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  profilePicture: String,
+  profilePicture: { type: String  }, //  profile picture
+  oldProfilePictures: [{ type: String }], // Stores old profile pictures
   birthday: { type: Date, required: true },
-  gender: { type: String, required: true, enum: ['male', 'female', 'custom'] },
+  gender: { type: String, required: true, enum: ['male', 'female'] },
   friends:[{
      type:mongoose.Schema.Types.ObjectId,
      ref:'User'
@@ -26,13 +27,14 @@ const userSchema = new mongoose.Schema({
     type:mongoose.Schema.Types.ObjectId,
     ref:'Post'
  }],
-  passwordResetToken:{  type:String},
+  passwordResetToken:{  type: String},
 tokenExpiration:{ type:Date},
   createdAt: { type: Date, default: Date.now() },
 });
 userSchema.methods.correctpasssword= async function (enteredpassword,userpassword){
  return await bcrypt.compare(userpassword,enteredpassword);
 };
+
 userSchema.methods.createToken= function(){
 
   const resetToken = crypto.randomBytes(12).toString('hex');
@@ -41,6 +43,7 @@ userSchema.methods.createToken= function(){
  
 return resetToken;
 };
+
 userSchema.pre('save',async function(next){
   if (!this.isModified('password'))
     return next();

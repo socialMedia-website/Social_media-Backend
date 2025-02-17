@@ -6,7 +6,13 @@ const bodyparser=require('body-parser');
 const authenticateToken=require('./middleware/is-Auth');
 const multer=require('multer');
 const postRoute=require('./routes/posts');
+const { swaggerUi, swaggerSpec } = require("./swaggerConfig");
+
+
 const app=express();
+// Serve Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 connectDB();
 const fileStorage= multer.diskStorage({
     destination:(req,file,cb)=>{
@@ -26,6 +32,7 @@ const filefilter=(req,file,cb)=>{
         cb(null, false);
       }
 };
+
 
 app.use(bodyparser.json());
 app.use(multer({ storage: fileStorage, fileFilter:filefilter }).single('image'));
@@ -53,6 +60,9 @@ app.use((error, req, res, next) => {
   app.get('/protected', authenticateToken, (req, res) => {
     res.json({ message: 'Welcome to the protected route, user ' + req.userId });
 });
+
+
 app.listen(3000,()=>{
     console.log('server is starting running now ');
+    console.log("Swagger UI available at http://localhost:3000/api-docs");
 })

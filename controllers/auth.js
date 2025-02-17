@@ -2,6 +2,7 @@ const User=require('../models/user');
 const creatJWT=require('../config/jwt');
 const bcrypt=require('bcryptjs');
 const sendEmail=require('../config/sendEmail');
+
 exports.register=async (req,res,next)=>{
    
 const {firstName,lastName, email,password, birthday,gender}=req.body;
@@ -24,6 +25,7 @@ res
 .status(200)
 .json('user sign up successfully, now you can login ');
 };
+
 exports.login=async (req,res,next)=>{
     const { email,password}=req.body;
     const user = await User.findOne({email:email});
@@ -59,7 +61,7 @@ exports.forgotpassword=async (req,res,next)=>{
     err.statusCode=404;
     next(err);
   }
- console.log(user.email)
+
   const resetToken=  user.createToken();
   if (!resetToken){
     const err=new Error ('could not find resettoken');
@@ -102,7 +104,7 @@ exports.resetpassword=async (req,res,next)=>{
         next(err);
 }
    const user= await User.findOne({
-    passwordResetToken:resetToken,
+    passwordResetToken:token,
     tokenExpiration:{$gt:Date.now()}
 });
 if (!user){

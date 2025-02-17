@@ -2,6 +2,8 @@ const Post=require('../models/post');
 const User= require('../models/user');
 const Comment= require('../models/comment');
 const React = require('../models/react');
+const { authenticateUser } = require('../middleware/is-Auth');
+//const { handleImageUpload } = require('../middlewares/imageUploadMiddleware');
 exports.createpost=async (req,res,next)=>{
    try{
     const content= req.body.content;
@@ -42,50 +44,54 @@ catch(err){
     next(err);
    }
 };
-exports.removepost=async (req,res,next)=>{
-    const postId=req.params.postId;
-    try{
-   const post= await Post.findByIdAndDelete(postId);
-   res.status(200).json({message:"Post is deleted successfully!"});
-}
 
- catch(err){
-    err.statuscode(500);
-    next(err);
-   }
-};
 exports.getTimelinePosts=async(req,res,next)=>{
 const user= await User.findById(req.userId);
-
+/*const posts = await Post.find({ author: { $in: user.following } }).populate('author');
+res.status(200).json(posts);
+*/
 };
+//done
+exports.removepost = async (req, res, next) => {
+    const postId = req.query.id;
+    console.log(postId);
+    try {
+        // Find the post to delete
+        const post = await Post.findById(postId);
 
+        if (!post) {
+            return res.status(404).json({ message: "Post not found!" });
+        }
 
+        // Remove all comments related to the post
+        await Comment.deleteMany({ post: postId });
 
-exports.commentonpost=async(req,res,next)=>{
-    const userId= req.userId;
-    const postId= req.params.postId;
-    const content=req.body.content;
-    
-    const post =Post.findById(postId);
-    
-    if (!post){
-        return res.status(401).json({message:"post is not found"});
+        // Remove all reactions related to the post
+        await React.deleteMany({ post: postId });
+
+        
+        await Post.findByIdAndDelete(postId);
+
+        res.status(200).json({ message: "Post and its comments and reactions are deleted successfully!" });
+    } catch (err) {
+        err.statusCode = 500;
+        next(err);
     }
-    const comment=new Comment({
-        content:content,
-        creator:userId,
-        post:postId
-         });
-await comment.save();
-    post.comments.push(comment._id);
-    await post.save();
-    res.status(200).json({message:"comment is created."});
 };
+
+
+
+
+
+//not tested yet
 
 exports.getcomments=async(req,res,next)=>{
  const postId=req.params.postId;
     try{
    const post= await Post.findById (postId);
+   if (!post){
+    return res.status(401).json({message:"post is not found"});
+       }
     res.status(200).json({message:"we get post comments successfully",
         comments:post.comments
     });
@@ -95,75 +101,75 @@ exports.getcomments=async(req,res,next)=>{
     next(err);
    }
 };
-exports.getPostReactions=async(req,res,next)=>{
-const postId= req.params.postId;
-try{
-   const post= await Post.findById (postId);
-   const Love=await find( post.reactions.type=="Love");
-   const Like=await find( post.reactions.type=="Like");
-   const Angry= await find( post.reactions.type=="Angry");
-   const Sad=await find( post.reactions.type=="Sad");
-   const Care=await find( post.reactions.type=="Care");
-    res.status(200).json({message:"we get post reactions successfully",
-        reactions:post.reactions,
-        Love,Like,Sad,Angry,Care
-    });
-    }
-    catch(err){
-    err.statuscode(500);
-    next(err);
-   }
 
-};
-// Like a post
+// react a post(done)
+
 exports.reactPost = async (req, res) => {
     try {
-        const post = await Post.findById(req.body.postId);
-      const reactType=req.body.type;
-      const author =req.userId;
-      const react=new React({
-        type:reactType,
-        author:author
-      });
-      await react.save();
-      if (!post){
-    return res.status(401).json({message:"post is not found"});
-       }
-       const userWhoReact= await find(post.reactions.author==req.userId)
-        if (!userWhoReact) {
-            post.reactions.push(react);}
-            else{
-           //عايزة اجيب الريأكت واغير نوعه
-            }
-            await post.save();
-            res.status(200).json({ message: 'Post liked.' });
-        // } else {
-        //     res.status(400).json({ message: 'Post already liked.' });
-        // }
+        const post = await Post.findById(req.body.postId).populate('reactions'); 
+        if (!post) {
+            return res.status(401).json({ message: "Post not found" });
+        }
+
+        const reactType = req.body.type;
+
+        
+        const existingReact = post.reactions.find(r => r.author.toString() === req.userId);
+
+        if (existingReact) {
+            
+            existingReact.type = reactType;
+            await existingReact.save(); 
+        } else {
+           
+            const react = new React({
+                type: reactType,
+                author: req.userId,
+                post: post._id,
+            });
+            await react.save(); 
+
+            post.reactions.push(react);
+        }
+
+        await post.save(); 
+        res.status(200).json({ message: 'Reaction updated successfully' });
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
 
-exports.getCommentReactions=async(req,res,next)=>{
-    const postId= req.params.postId;
-    const commentId=req.params.commentId;
-    try{
-       const post= await Post.findById (postId);
-       const comment= await Comment.findById(commentId);
-       const Love=await find( comment.reactions.type=="Love");
-       const Like=await find( comment.reactions.type=="Like");
-       const Angry= await find( comment.reactions.type=="Angry");
-       const Sad=await find( comment.reactions.type=="Sad");
-       const Care=await find( comment.reactions.type=="Care");
-        res.status(200).json({message:"we get comment reactions successfully",
-            reactions:comment.reactions,
-            Love,Like,Sad,Angry,Care
-        });
+
+
+//done
+exports.getPostReactions=async(req,res,next)=>{
+    const postId= req.query.postId;
+   
+    try {
+       
+        const post = await Post.findById(postId).populate('reactions'); 
+        
+   
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
         }
-        catch(err){
-        err.statuscode(500);
+
+        
+        const reactionsSummary = post.reactions.reduce((acc, r) => {
+            acc[r.type] = (acc[r.type] || 0) + 1;
+            return acc;
+        }, {});
+
+        res.status(200).json({ reactionsSummary });
+
+    } catch (err) {
+        err.statusCode = 500;  
         next(err);
-       }
+    }
     
     };
+
+
+
+// handle reaction and post deletion and comment 
+// re look to react model
