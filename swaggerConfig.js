@@ -3,22 +3,38 @@ const swaggerUi = require("swagger-ui-express");
 
 // Swagger definition
 const swaggerOptions = {
-  definition: {
-    openapi: "3.0.0", // Use OpenAPI 3.0
+  swaggerDefinition: {
+    openapi: "3.0.0",
     info: {
-      title: "Farmassist API",
+      title: "API Documentation",
       version: "1.0.0",
-      description: "API documentation for Farmassist project",
+      description: "API documentation with JWT authentication",
     },
     servers: [
       {
         url: "http://localhost:3000",
-        description: "Local development server",
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [],
       },
     ],
   },
-  apis: ["./controllers/*.js"], // Path to the API route files
+  apis: ["./routes/*.js"], // تأكدي من مسار ملفات الـ routes الخاصة بكِ
 };
+
+module.exports = swaggerOptions;
+
 
 // Generate Swagger docs
 const swaggerSpec = swaggerJsdoc(swaggerOptions);

@@ -6,11 +6,11 @@ const { authenticateUser } = require('../middleware/is-Auth');
 //const { handleImageUpload } = require('../middlewares/imageUploadMiddleware');
 
 
-// create comment
+// create comment  done
 exports.commentonpost=async(req,res,next)=>{
     try{
     const userId= req.userId;
-    const postId= req.query.postId;
+    const postId= req.params.id;
     const content=req.body.content;
     if (!content){
         return res.status(401).json({message:"content not allowed to be empty"});
@@ -35,18 +35,61 @@ await comment.save();
             next(err);
            }
 };
+
+exports.getcommentById=async(req,res,next)=>{
+ const postId=req.params.id;
+ const commentId=req.params.CommentId;
+    try{
+   const comment= await Comment.findById (commentId);
+   if (!comment){
+    return res.status(401).json({message:"comment is not found"});
+       }
+    res.status(200).json({message:"we get comment successfully",
+        comment:comment
+    });
+    }
+    catch(err){
+    err.statuscode(500);
+    next(err);
+   }
+};
+//get post all comments
+exports.getcomments=async(req,res,next)=>{
+ const postId=req.params.id;
+    try{
+   const post= await Post.findById (postId);
+   if (!post){
+    return res.status(401).json({message:"post is not found"});
+       }
+    res.status(200).json({message:"we get post comments successfully",
+        comments:post.comments
+    });
+    }
+    catch(err){
+    err.statuscode(500);
+    next(err);
+   }
+};
 //remove comment from the post
 exports.removeComment = async (req, res, next) => {
-    const commentId = req.params.commentId;
+    const commentId = req.params.CommentId;
+    const postId=req.params.id;
     try {
         // Find the comment to delete
-        const comment = await Post.findById(commentId);
+        const comment = await Comment.findById(commentId);
+      
 
         if (!comment) {
             return res.status(404).json({ message: "comment not found!" });
         }
 
-      
+    
+        await Post.findOneAndUpdate(
+            { _id: postId },
+            { $pull: { comments: commentId } }, 
+            { new: true }
+        );
+   
 
         // Remove all reactions related to the comment
         await React.deleteMany({ comment: commentId });
@@ -61,11 +104,37 @@ exports.removeComment = async (req, res, next) => {
     }
 };
 
+exports.updateComment = async (req, res, next) => {
+    const commentId = req.params.CommentId;
+    const postId=req.params.id;
+    const content =req.body.content;
+    try {
+        // Find the comment to update
+        const comment = await Comment.findById(commentId);
+      
+
+        if (!comment) {
+            return res.status(404).json({ message: "comment not found!" });
+        }
+
+    comment.content=content;
+      await comment.save();
+
+    
+
+        res.status(200).json({ message: "comment is updated successfully!" });
+    } catch (err) {
+        err.statusCode = 500;
+        next(err);
+    }
+};
+
 // react to comment 
 exports.reactToComment = async (req, res, next) => {
     try {
-        const commentId = req.query.commentId; 
-        const { type , postId} = req.body; 
+        const postId=req.params.id;
+        const commentId = req.params.CommentId; 
+        const { type } = req.body; 
         
 
         
@@ -108,7 +177,7 @@ exports.reactToComment = async (req, res, next) => {
 
 exports.getCommentReactions = async (req, res, next) => {
    
-    const commentId = req.query.commentId;
+    const commentId =req.params.CommentId;
     try {
        
         const comment = await Comment.findById(commentId).populate('reactions');

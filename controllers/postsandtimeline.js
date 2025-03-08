@@ -25,9 +25,9 @@ await post.save();
     next(err);
    }
 };
-
+//done
 exports.Editpost=async(req,res,next)=>{
-const postId=req.body.postId;
+const postId=req.params.id;
 try{
 const post= await Post.findById(postId);
 if (req.body.content){
@@ -53,7 +53,7 @@ res.status(200).json(posts);
 };
 //done
 exports.removepost = async (req, res, next) => {
-    const postId = req.query.id;
+    const postId = req.params.id;
     console.log(postId);
     try {
         // Find the post to delete
@@ -79,34 +79,11 @@ exports.removepost = async (req, res, next) => {
     }
 };
 
-
-
-
-
-//not tested yet
-
-exports.getcomments=async(req,res,next)=>{
- const postId=req.params.postId;
-    try{
-   const post= await Post.findById (postId);
-   if (!post){
-    return res.status(401).json({message:"post is not found"});
-       }
-    res.status(200).json({message:"we get post comments successfully",
-        comments:post.comments
-    });
-    }
-    catch(err){
-    err.statuscode(500);
-    next(err);
-   }
-};
-
 // react a post(done)
-
 exports.reactPost = async (req, res) => {
     try {
-        const post = await Post.findById(req.body.postId).populate('reactions'); 
+        const postId=req.params.id;
+        const post = await Post.findById(postId).populate('reactions'); 
         if (!post) {
             return res.status(401).json({ message: "Post not found" });
         }
@@ -139,11 +116,8 @@ exports.reactPost = async (req, res) => {
     }
 };
 
-
-
-//done
 exports.getPostReactions=async(req,res,next)=>{
-    const postId= req.query.postId;
+    const postId= req.params.id;
    
     try {
        
@@ -168,8 +142,3 @@ exports.getPostReactions=async(req,res,next)=>{
     }
     
     };
-
-
-
-// handle reaction and post deletion and comment 
-// re look to react model
