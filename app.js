@@ -8,9 +8,21 @@ const postRoute=require('./routes/posts');
 const userRouter=require('./routes/user');
 const friendsRouter=require('./routes/friends');
 const { swaggerUi, swaggerSpec } = require("./swaggerConfig");
+const http = require('http');
+const { Server } = require('socket.io');
+const cors = require('cors');
+const setupSocket = require('./socket/chat'); 
 
 
 const app=express();
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  }
+});
+app.use(cors());
 // Serve Swagger UI
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
@@ -22,6 +34,8 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
   });
+
+  setupSocket(io);
 
 app.use('/api/auth',authrouter);
 app.use('/api/posts',postRoute);
@@ -40,7 +54,6 @@ app.use((error, req, res, next) => {
   app.get('/protected', authenticateToken, (req, res) => {
     res.json({ message: 'Welcome to the protected route, user ' + req.userId });
 });
-
 
 app.listen(3000,()=>{
   connectDB();

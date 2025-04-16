@@ -1,5 +1,12 @@
 const authcontroller=require('../controllers/auth');
 const express=require('express');
+const {
+    registerSchema ,
+    loginSchema ,
+    forgotPasswordSchema ,
+    resetPasswordSchema ,
+  }=require('../validations/authValidation');
+const {validateRequest}=require('../middleware/validateRequest');
 const router=express.Router();
 /**
  * @swagger
@@ -33,7 +40,7 @@ const router=express.Router();
  *       500:
  *         description: Internal server error
  */
-router.post('/signup',authcontroller.register);
+router.post('/signup',validateRequest(registerSchema),authcontroller.register);
 /**
  * @swagger
  * /api/auth/login:
@@ -60,7 +67,7 @@ router.post('/signup',authcontroller.register);
  *       404:
  *         description: User not found
  */
-router.post('/login',authcontroller.login);
+router.post('/login',validateRequest(loginSchema),authcontroller.login);
 /**
  * @swagger
  * /api/auth/forgotPassword:
@@ -83,7 +90,7 @@ router.post('/login',authcontroller.login);
  *       404:
  *         description: User not found
  */
-router.post ('/forgotpassword',authcontroller.forgotPassword);
+router.post ('/forgotpassword',validateRequest(forgotPasswordSchema),authcontroller.forgotPassword);
 /**
  * @swagger
  * /api/auth/resetPassword/{resetToken}:
@@ -115,5 +122,5 @@ router.post ('/forgotpassword',authcontroller.forgotPassword);
  *       400:
  *         description: Invalid or expired token
  */
-router.put('/resetPassword/:resetToken',authcontroller.resetPassword);
+router.put('/resetPassword/:resetToken',validateRequest(resetPasswordSchema),authcontroller.resetPassword);
 module.exports=router;

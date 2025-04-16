@@ -3,7 +3,7 @@ const express = require('express');
 const postController = require('../controllers/postsandtimeline');
 const commentController=require('../controllers/comment');
 const isAuth = require('../middleware/is-Auth');
-
+const validateObjectIds=require('../middleware/validateId');
 const router = express.Router();
 
 
@@ -72,7 +72,7 @@ router.get('/timeline', isAuth, postController.getTimelinePosts);
  *         description: Server error
  */
 
-router.put('/:id', isAuth, postController.Editpost); 
+router.put('/:id', isAuth,validateObjectIds, postController.Editpost); 
 /**
  * @swagger
  * /api/posts/{id}:
@@ -97,7 +97,7 @@ router.put('/:id', isAuth, postController.Editpost);
  *         description: Server error
  */
 
-router.delete('/:id', isAuth, postController.removepost); 
+router.delete('/:id', isAuth,validateObjectIds, postController.removepost); 
 
 /**
  * @swagger
@@ -135,7 +135,7 @@ router.delete('/:id', isAuth, postController.removepost);
  *       500:
  *         description: Server error
  */
-router.post('/:id/comment',isAuth,commentController.commentonpost);
+router.post('/:id/comment',isAuth,validateObjectIds,commentController.commentonpost);
  
 /**
  * @swagger
@@ -167,7 +167,7 @@ router.post('/:id/comment',isAuth,commentController.commentonpost);
  *       500:
  *         description: Server error
  */
-router.get('/:id/comment/:CommentId',isAuth,commentController.getcommentById)
+router.get('/:id/comment/:CommentId',validateObjectIds,isAuth,commentController.getcommentById)
 /**
  * @swagger
  * /api/posts/{id}/comments:

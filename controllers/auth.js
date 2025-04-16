@@ -5,7 +5,7 @@ const sendEmail = require('../config/sendEmail');
 
 exports.register = async (req, res, next) => {
     try {
-        const { firstName, lastName, email, password, birthday, gender } = req.body;
+        const { firstName, lastName, email, password, birthday, gender,publicKey  } = req.body;
         const hashedPassword = await bcrypt.hash(password, 12);
 
         const user = new User({
@@ -14,7 +14,8 @@ exports.register = async (req, res, next) => {
             email,
             password: hashedPassword,
             birthday,
-            gender
+            gender,
+            publicKey 
         });
 
         const savedUser = await user.save();

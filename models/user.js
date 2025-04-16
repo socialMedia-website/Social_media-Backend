@@ -17,7 +17,9 @@ const userSchema = new mongoose.Schema({
   bio:{
     type:String,
     default:''
-  }
+  },
+  isOnline:{ type: Boolean, default: false },
+  lastSeen:{ type: Date }
   ,
   friendsRequests:[{
     type:mongoose.Schema.Types.ObjectId,
@@ -27,6 +29,7 @@ const userSchema = new mongoose.Schema({
     type:mongoose.Schema.Types.ObjectId,
     ref:'Post'
  }],
+ publicKey: String,
   passwordResetToken:{  type: String},
 tokenExpiration:{ type:Date},
   createdAt: { type: Date, default: Date.now() },

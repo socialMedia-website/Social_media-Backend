@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-const registerValidation = Joi.object({
+const registerSchema = Joi.object({
   firstName: Joi.string().min(2).max(30).required(),
   lastName: Joi.string().min(2).max(30).required(),
   email: Joi.string().email().required(),
@@ -9,23 +9,23 @@ const registerValidation = Joi.object({
   gender: Joi.string().valid("male", "female", "other").required(),
 });
 
-const loginValidation = Joi.object({
+const loginSchema  = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
 });
 
-const forgotPasswordValidation = Joi.object({
+const forgotPasswordSchema  = Joi.object({
   email: Joi.string().email().required(),
 });
 
-const resetPasswordValidation = Joi.object({
+const resetPasswordSchema  = Joi.object({
   password: Joi.string().min(6).required(),
   confirmpassword: Joi.ref("password"),
 });
 
 module.exports = {
-  registerValidation,
-  loginValidation,
-  forgotPasswordValidation,
-  resetPasswordValidation,
+  registerSchema ,
+  loginSchema ,
+  forgotPasswordSchema ,
+  resetPasswordSchema ,
 };
