@@ -7,6 +7,8 @@ const authenticateToken=require('./middleware/is-Auth');
 const postRoute=require('./routes/posts');
 const userRouter=require('./routes/user');
 const friendsRouter=require('./routes/friends');
+const storyRouter = require('./routes/story.routes');
+
 const { swaggerUi, swaggerSpec } = require("./swaggerConfig");
 const http = require('http');
 const { Server } = require('socket.io');
@@ -40,7 +42,8 @@ app.use((req, res, next) => {
 app.use('/api/auth',authrouter);
 app.use('/api/posts',postRoute);
 app.use('/api/users',userRouter);
-app.use('/api/friends',friendsRouter)
+app.use('/api/friends',friendsRouter);
+app.use('/api/stories', storyRouter);
 // Error handling middleware
 app.use((error, req, res, next) => {
     const status = error.statusCode || 500;
