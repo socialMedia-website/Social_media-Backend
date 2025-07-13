@@ -1,13 +1,15 @@
-const authcontroller=require('../controllers/auth');
-const express=require('express');
+const express = require('express');
+const { makeInvoker } = require('awilix-express');
 const {
-    registerSchema ,
-    loginSchema ,
-    forgotPasswordSchema ,
-    resetPasswordSchema ,
-  }=require('../validations/authValidation');
-const {validateRequest}=require('../middleware/validateRequest');
-const router=express.Router();
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} = require('../validations/Auth.validation');
+const { validateRequest } = require('../middleware/validateRequest');
+
+const router = express.Router();
+const api = makeInvoker((cradle) => cradle.authController);
 /**
  * @swagger
  * /api/auth/signup:
@@ -40,7 +42,7 @@ const router=express.Router();
  *       500:
  *         description: Internal server error
  */
-router.post('/signup',validateRequest(registerSchema),authcontroller.register);
+router.post('/signup', validateRequest(registerSchema), api('register'));
 /**
  * @swagger
  * /api/auth/login:
@@ -67,7 +69,7 @@ router.post('/signup',validateRequest(registerSchema),authcontroller.register);
  *       404:
  *         description: User not found
  */
-router.post('/login',validateRequest(loginSchema),authcontroller.login);
+router.post('/login', validateRequest(loginSchema), api('login'));
 /**
  * @swagger
  * /api/auth/forgotPassword:
@@ -90,7 +92,7 @@ router.post('/login',validateRequest(loginSchema),authcontroller.login);
  *       404:
  *         description: User not found
  */
-router.post ('/forgotpassword',validateRequest(forgotPasswordSchema),authcontroller.forgotPassword);
+router.post('/forgotpassword', validateRequest(forgotPasswordSchema), api('forgotPassword'));
 /**
  * @swagger
  * /api/auth/resetPassword/{resetToken}:
@@ -122,5 +124,6 @@ router.post ('/forgotpassword',validateRequest(forgotPasswordSchema),authcontrol
  *       400:
  *         description: Invalid or expired token
  */
-router.put('/resetPassword/:resetToken',validateRequest(resetPasswordSchema),authcontroller.resetPassword);
-module.exports=router;
+router.put('/resetPassword/:resetToken', validateRequest(resetPasswordSchema), api('resetPassword'));
+
+module.exports = router;

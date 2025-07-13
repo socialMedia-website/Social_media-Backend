@@ -1,9 +1,11 @@
-const usercontroller=require('../controllers/user');
-const express=require('express');
-const router=express.Router();
-const multer=require("multer");
-const User=require("../models/user");
+const express = require('express');
+const { makeInvoker } = require('awilix-express');
+const multer = require("multer");
+const path = require('path');
 const authMiddleware = require('../middleware/is-Auth');
+
+const router = express.Router();
+const api = makeInvoker((cradle) => cradle.userController);
 
 const storage = multer.diskStorage({
   destination: "./uploads/profiles/",
@@ -36,7 +38,7 @@ const upload = multer({ storage: storage });
  *       500:
  *         description: Server error
  */
-router.post("/profile-photo", authMiddleware, upload.single("profilePhoto"), usercontroller.uploadProfilePhoto);
+router.post("/profile-photo", authMiddleware, upload.single("profilePhoto"), api('uploadProfilePhoto'));
 /**
  * @swagger
  * /api/users/update-password:
@@ -66,7 +68,7 @@ router.post("/profile-photo", authMiddleware, upload.single("profilePhoto"), use
  *       500:
  *         description: Server error
  */
-router.put("/update-password", authMiddleware,usercontroller.editpassword);
+router.put("/update-password", authMiddleware, api('editpassword'));
 /**
  * @swagger
  * /api/users/update-name:
@@ -92,7 +94,7 @@ router.put("/update-password", authMiddleware,usercontroller.editpassword);
  *       500:
  *         description: Server error
  */
-router.put("/update-name",authMiddleware,usercontroller.editName);
+router.put("/update-name", authMiddleware, api('editName'));
 /**
  * @swagger
  * /api/users/profile:
@@ -107,6 +109,6 @@ router.put("/update-name",authMiddleware,usercontroller.editName);
  *       404:
  *         description: User not found
  */
-router.get("/profile", authMiddleware, usercontroller.getUserProfile);
+router.get("/profile", authMiddleware, api('getUserProfile'));
 
-module.exports=router;
+module.exports = router;

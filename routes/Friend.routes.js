@@ -1,7 +1,11 @@
 const express = require('express');
-const router=express.Router();
-const friendsController=require("../controllers/friends");
-const authorization=require("../middleware/is-Auth");
+const { makeInvoker } = require('awilix-express');
+const authorization = require('../middleware/is-Auth');
+const { validateFriendRequest } = require('../validations/Friend.validation');
+
+const router = express.Router();
+const api = makeInvoker((cradle) => cradle.friendController);
+
 /**
  * @swagger
  * tags:
@@ -30,7 +34,8 @@ const authorization=require("../middleware/is-Auth");
  *       500:
  *         description: Server error
  */
-router.post("/request/:_id",authorization,friendsController.sendfriendrequest);
+router.post("/request/:_id", authorization, validateFriendRequest, api('sendfriendrequest'));
+
 /**
  * @swagger
  * /friends/accept/{_id}:
@@ -52,7 +57,7 @@ router.post("/request/:_id",authorization,friendsController.sendfriendrequest);
  *       500:
  *         description: Server error
  */
-router.post("/accept/:_id",authorization,friendsController.acceptfriendrequest);
+router.post("/accept/:_id", authorization, validateFriendRequest, api('acceptfriendrequest'));
 
 /**
  * @swagger
@@ -75,7 +80,7 @@ router.post("/accept/:_id",authorization,friendsController.acceptfriendrequest);
  *       500:
  *         description: Server error
  */
-router.delete('/remove-request/received/:_id', authorization,friendsController.removefriendrequestIReceived);
+router.delete('/remove-request/received/:_id', authorization, validateFriendRequest, api('removefriendrequestIReceived'));
 
 /**
  * @swagger
@@ -98,7 +103,8 @@ router.delete('/remove-request/received/:_id', authorization,friendsController.r
  *       500:
  *         description: Server error
  */
-router.delete('/remove-request/sent/:_id', authorization,friendsController.removefriendrequestISent);
+router.delete('/remove-request/sent/:_id', authorization, validateFriendRequest, api('removefriendrequestISent'));
+
 /**
  * @swagger
  * /friends/remove/{_id}:
@@ -120,7 +126,7 @@ router.delete('/remove-request/sent/:_id', authorization,friendsController.remov
  *       500:
  *         description: Server error
  */
-router.delete('/remove/:_id', friendsController.removefriend);
+router.delete('/remove/:_id', authorization, validateFriendRequest, api('removefriend'));
 
 /**
  * @swagger
@@ -134,7 +140,7 @@ router.delete('/remove/:_id', friendsController.removefriend);
  *       500:
  *         description: Server error
  */
-router.get('/',authorization, friendsController.getFriends);
+router.get('/', authorization, api('getFriends'));
 
 /**
  * @swagger
@@ -157,8 +163,6 @@ router.get('/',authorization, friendsController.getFriends);
  *       500:
  *         description: Server error
  */
-router.get('/:_id', authorization,friendsController.getFriendbyId);
+router.get('/:_id', authorization, validateFriendRequest, api('getFriendbyId'));
 
 module.exports = router;
-
-module.exports=router;

@@ -3,58 +3,63 @@ const createJWT = require('../config/jwt');
 const bcrypt = require('bcryptjs');
 const sendEmail = require('../config/sendEmail');
 
-exports.register = async (req, res, next) => {
+class AuthController {
+  constructor({ authService }) {
+    this.authService = authService;
+  }
+
+  register = async (req, res, next) => {
     try {
-        const { firstName, lastName, email, password, birthday, gender,publicKey  } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 12);
+      const { firstName, lastName, email, password, birthday, gender,publicKey  } = req.body;
+      const hashedPassword = await bcrypt.hash(password, 12);
 
-        const user = new User({
-            firstName,
-            lastName,
-            email,
-            password: hashedPassword,
-            birthday,
-            gender,
-            publicKey 
-        });
+      const user = new User({
+          firstName,
+          lastName,
+          email,
+          password: hashedPassword,
+          birthday,
+          gender,
+          publicKey 
+      });
 
-        const savedUser = await user.save();
-        if (!savedUser) {
-            const err = new Error('Cannot save user');
-            return next(err);
-        }
+      const savedUser = await user.save();
+      if (!savedUser) {
+          const err = new Error('Cannot save user');
+          return next(err);
+      }
 
-        res.status(200).json({ success: true, message: 'User signed up successfully, now you can login' });
+      res.status(200).json({ success: true, message: 'User signed up successfully, now you can login' });
     } catch (err) {
-        err.statusCode = 500;
-        next(err);
+      err.statusCode = 500;
+      next(err);
     }
-};
+  };
 
-exports.login = async (req, res, next) => {
+  login = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
+      const { email, password } = req.body;
+      const user = await User.findOne({ email });
 
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'Could not find user with this email, you can try to sign up' });
-        }
+      if (!user) {
+          return res.status(404).json({ success: false, message: 'Could not find user with this email, you can try to sign up' });
+      }
 
-        const isEqual = await bcrypt.compare(password, user.password);  
-        if (!isEqual) {
-            return res.status(401).json({ success: false, message: 'Incorrect password' });
-        }
+      const isEqual = await bcrypt.compare(password, user.password);  
+      if (!isEqual) {
+          return res.status(401).json({ success: false, message: 'Incorrect password' });
+      }
 
-        
-        const token = createJWT(user._id);
-        res.status(200).json({ success: true, message: 'User logged in successfully', data: { token, userId: user._id } });
+      
+      const token = createJWT(user._id);
+      res.status(200).json({ success: true, message: 'User logged in successfully', data: { token, userId: user._id } });
     } catch (err) {
-        err.statusCode = 500;
-        next(err);
+      err.statusCode = 500;
+      next(err);
     }
-};
+  };
 
-exports.forgotPassword = async (req, res, next) => {
+  forgotPassword = async (req, res, next) => {
     try {
         const { email } = req.body;
         const user = await User.findOne({ email });
@@ -86,7 +91,7 @@ exports.forgotPassword = async (req, res, next) => {
     }
 };
 
-exports.resetPassword = async (req, res, next) => {
+resetPassword = async (req, res, next) => {
     try {
         const { password, confirmPassword } = req.body;
         const { resetToken } = req.params;
@@ -120,3 +125,6 @@ exports.resetPassword = async (req, res, next) => {
         next(err);
     }
 };
+}
+
+module.exports = AuthController;
