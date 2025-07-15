@@ -5,7 +5,7 @@ const Authheader= req.get('Authorization');
 if (!Authheader){
     const err= new Error('beaer token error');
     err.statusCode=401;
-    next(err);
+    return  next(err);
 }
 
 const token =Authheader.split(' ')[1];

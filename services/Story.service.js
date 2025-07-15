@@ -19,6 +19,10 @@ class StoryService {
     const friendsIds = user.friends.map(friend => friend._id);
     return this.storyRepository.findFriendsStories(friendsIds, page, limit);
   }
+
+  async getMyStories(userId, page = 1, limit = 10) {
+    return this.storyRepository.findFriendsStories([userId], page, limit);
+  }
 }
 
 module.exports = StoryService;
